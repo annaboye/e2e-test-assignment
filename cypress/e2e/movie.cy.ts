@@ -29,30 +29,66 @@ const mockData: IOmdbResponse = {
   ],
 };
 
-describe("input", () => {
-  it("should have a placeholder", () => {
-    cy.visit("http://localhost:1234");
-    cy.get("input").should("have.attr", "placeholder");
-  });
+const mockedEmtyList: IOmdbResponse = {
+  Search: [],
+};
 
-  it("should show no result message", () => {
-    cy.visit("http://localhost:1234");
-    cy.get("button").click();
+beforeEach(() => {
+  cy.visit("/");
+});
+
+describe("real API-request", () => {
+  it("should create new html, a real request", () => {
+    cy.get("input").type("Lord of the Rings");
+
+    cy.get("input").should("have.value", "Lord of the Rings");
+
+    cy.get("#search").click();
+
+    cy.get("h3:first").contains("Lord of the Rings");
+  });
+});
+
+describe("mocked API-requests", () => {
+  it("should create new html, with mockedData", () => {
+    cy.intercept("GET", "http://omdbapi.com/*", mockData).as("moviesearch");
+    cy.get("input").type("Alfons");
+
+    cy.get("#search").click();
+    cy.wait("@moviesearch").its("request.url").should("contain", "Alfons");
+
+    cy.get("h3").should("have.length", 3);
+    cy.get("h3:first").contains("The Lord");
+    cy.get("img").should("have.length", 3);
+    cy.get("img:first").should(
+      "have.attr",
+      "src",
+      "https://m.media-amazon.com/images/M/MV5BN2EyZjM3NzUtNWUzMi00MTgxLWI0NTctMzY4M2VlOTdjZWRiXkEyXkFqcGdeQXVyNDUzOTQ5MjY@._V1_SX300.jpg"
+    );
+  });
+  it("should show no result message when emty list return", () => {
+    cy.intercept("GET", "http://omdbapi.com/*", mockedEmtyList).as(
+      "moviesearch"
+    );
+    cy.get("input").type("no search result");
+    cy.get("#search").click();
     cy.get("p").contains("Inga sökresultat att visa");
   });
 });
 
-describe("create new html", () => {
-  it("should create new html", () => {
-    cy.visit("http://localhost:1234");
-    cy.intercept("GET", "http://omdbapi.com/*", mockData).as("moviesearch");
-
+describe("#searchForm", () => {
+  it("should change input.value when typing", () => {
     cy.get("input").type("Alfons");
 
     cy.get("input").should("have.value", "Alfons");
+  });
+  it("should have a placeholder in input", () => {
+    cy.get("input").should("have.attr", "placeholder", "Skriv titel här");
+  });
 
-    cy.get("button").click();
+  it("should show no result message when emty input", () => {
+    cy.get("#search").click();
 
-    cy.wait("@moviesearch").get("h3").should("have.length", 3);
+    cy.get("p").contains("Inga sökresultat att visa");
   });
 });
