@@ -62,12 +62,31 @@ describe("test movieApp", () => {
     cy.get("h3:first").contains("Lord of the Rings");
   });
 
-  it("should create new html, with mockedData", () => {
+  it("should create new html when click on button, with mockedData", () => {
     cy.intercept("GET", "http://omdbapi.com/*", mockData).as("moviesearch");
     cy.get("input").type("Alfons");
 
     cy.get("#search").click();
+
     cy.wait("@moviesearch").its("request.url").should("contain", "Alfons");
+
+    cy.get("h3").should("have.length", 3);
+    cy.get("div.movie").should("have.length", 3);
+    cy.get("h3:first").contains("The Lord");
+    cy.get("img").should("have.length", 3);
+    cy.get("img:first").should(
+      "have.attr",
+      "src",
+      "https://m.media-amazon.com/images/M/MV5BN2EyZjM3NzUtNWUzMi00MTgxLWI0NTctMzY4M2VlOTdjZWRiXkEyXkFqcGdeQXVyNDUzOTQ5MjY@._V1_SX300.jpg"
+    );
+  });
+  it("should create new html when submit form, with mockedData", () => {
+    cy.intercept("GET", "http://omdbapi.com/*", mockData).as("moviesearch");
+    cy.get("input").type("Lion");
+
+    cy.get("#searchForm").submit();
+
+    cy.wait("@moviesearch").its("request.url").should("contain", "Lion");
 
     cy.get("h3").should("have.length", 3);
     cy.get("div.movie").should("have.length", 3);
