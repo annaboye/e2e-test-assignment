@@ -37,46 +37,7 @@ beforeEach(() => {
   cy.visit("/");
 });
 
-describe("real API-request", () => {
-  it("should create new html, a real request", () => {
-    cy.get("input").type("Lord of the Rings");
-
-    cy.get("input").should("have.value", "Lord of the Rings");
-
-    cy.get("#search").click();
-
-    cy.get("h3:first").contains("Lord of the Rings");
-  });
-});
-
-describe("mocked API-requests", () => {
-  it("should create new html, with mockedData", () => {
-    cy.intercept("GET", "http://omdbapi.com/*", mockData).as("moviesearch");
-    cy.get("input").type("Alfons");
-
-    cy.get("#search").click();
-    cy.wait("@moviesearch").its("request.url").should("contain", "Alfons");
-
-    cy.get("h3").should("have.length", 3);
-    cy.get("h3:first").contains("The Lord");
-    cy.get("img").should("have.length", 3);
-    cy.get("img:first").should(
-      "have.attr",
-      "src",
-      "https://m.media-amazon.com/images/M/MV5BN2EyZjM3NzUtNWUzMi00MTgxLWI0NTctMzY4M2VlOTdjZWRiXkEyXkFqcGdeQXVyNDUzOTQ5MjY@._V1_SX300.jpg"
-    );
-  });
-  it("should show no result message when emty list return", () => {
-    cy.intercept("GET", "http://omdbapi.com/*", mockedEmtyList).as(
-      "moviesearch"
-    );
-    cy.get("input").type("no search result");
-    cy.get("#search").click();
-    cy.get("p").contains("Inga sökresultat att visa");
-  });
-});
-
-describe("#searchForm", () => {
+describe("test movieApp", () => {
   it("should change input.value when typing", () => {
     cy.get("input").type("Alfons");
 
@@ -89,6 +50,42 @@ describe("#searchForm", () => {
   it("should show no result message when emty input", () => {
     cy.get("#search").click();
 
+    cy.get("p").contains("Inga sökresultat att visa");
+  });
+  it("should create new html, a real request", () => {
+    cy.get("input").type("Lord of the Rings");
+
+    cy.get("input").should("have.value", "Lord of the Rings");
+
+    cy.get("#search").click();
+
+    cy.get("h3:first").contains("Lord of the Rings");
+  });
+
+  it("should create new html, with mockedData", () => {
+    cy.intercept("GET", "http://omdbapi.com/*", mockData).as("moviesearch");
+    cy.get("input").type("Alfons");
+
+    cy.get("#search").click();
+    cy.wait("@moviesearch").its("request.url").should("contain", "Alfons");
+
+    cy.get("h3").should("have.length", 3);
+    cy.get("div.movie").should("have.length", 3);
+    cy.get("h3:first").contains("The Lord");
+    cy.get("img").should("have.length", 3);
+    cy.get("img:first").should(
+      "have.attr",
+      "src",
+      "https://m.media-amazon.com/images/M/MV5BN2EyZjM3NzUtNWUzMi00MTgxLWI0NTctMzY4M2VlOTdjZWRiXkEyXkFqcGdeQXVyNDUzOTQ5MjY@._V1_SX300.jpg"
+    );
+  });
+
+  it("should show no result message when emty list return", () => {
+    cy.intercept("GET", "http://omdbapi.com/*", mockedEmtyList).as(
+      "moviesearch"
+    );
+    cy.get("input").type("no search result");
+    cy.get("#search").click();
     cy.get("p").contains("Inga sökresultat att visa");
   });
 });
